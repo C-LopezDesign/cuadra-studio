@@ -301,6 +301,7 @@ footer a{color:var(--muted)}
       </div>
       <div class="card">
         <form id="brief" novalidate>
+          <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" style="display:none" aria-hidden="true">
           <div class="two">
             <label for="f-name">Your name<input id="f-name" name="name" required autocomplete="name"></label>
             <label for="f-email">Email<input id="f-email" name="email" type="email" required autocomplete="email"></label>
@@ -320,15 +321,15 @@ footer a{color:var(--muted)}
           </div>
           <label for="f-msg">About the project<textarea id="f-msg" name="msg" placeholder="What you do, who your site is for, and when you hope to launch"></textarea></label>
           <p class="small" id="formError" aria-live="polite"></p>
-          <button class="btn primary" type="submit" style="justify-self:start">Send</button>
+          <button class="btn primary" type="submit" id="sendBtn" style="justify-self:start">Send</button>
         </form>
         <div class="done" id="done" hidden>
-          <h3 style="font-size:24px;font-weight:600">Your message is ready</h3>
-          <p class="small">Copy it to keep a record of your inquiry.</p>
+          <h3 style="font-size:24px;font-weight:600">Thanks, your message is on its way</h3>
+          <p class="small">We will reply within two business days. Here is a copy for your records.</p>
           <pre id="summary"></pre>
           <div class="ctas" style="margin-top:0">
             <button class="btn primary" type="button" id="copyMsg">Copy message</button>
-            <button class="btn" type="button" id="edit">Edit</button>
+            <button class="btn" type="button" id="edit">Send another</button>
           </div>
           <p class="small" id="msgNote" aria-live="polite"></p>
         </div>
@@ -354,6 +355,9 @@ footer a{color:var(--muted)}
       note.textContent = "Text selected. Press Ctrl+C or Cmd+C to copy.";
     }
   }
+  // Web3Forms access key from web3forms.com. It is safe to keep in public HTML.
+  var WEB3FORMS_KEY="2ac423c9-7c26-4601-8c7a-9e5e5726a55d";
+  var btn=document.getElementById("sendBtn");
   var form=document.getElementById("brief"), done=document.getElementById("done"), sum=document.getElementById("summary"), err=document.getElementById("formError");
   form.addEventListener("submit",function(e){
     e.preventDefault();
@@ -362,14 +366,32 @@ footer a{color:var(--muted)}
       err.textContent="Add your name and a valid email so we can reply.";
       return;
     }
+    if(d.get("botcheck")) return;
     err.textContent="";
-    sum.textContent =
+    var text =
       "Project inquiry for Cuadra Studio\n\n" +
       "Name: "+d.get("name")+"\nEmail: "+d.get("email")+
       (d.get("org")?"\nOrganization: "+d.get("org"):"")+
       "\nNeed: "+d.get("type")+"\nBudget: "+d.get("budget")+
       (d.get("msg").trim()?"\n\n"+d.get("msg").trim():"");
-    form.hidden=true; done.hidden=false;
+    btn.disabled=true; btn.textContent="Sending…";
+    fetch("https://api.web3forms.com/submit",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Accept":"application/json"},
+      body:JSON.stringify({
+        access_key:WEB3FORMS_KEY,
+        subject:"New project inquiry from "+d.get("name"),
+        from_name:"Cuadra Studio website",
+        replyto:d.get("email"),
+        name:d.get("name"), email:d.get("email"), organization:d.get("org"),
+        need:d.get("type"), budget:d.get("budget"), message:d.get("msg")
+      })
+    }).then(function(r){ return r.json(); }).then(function(res){
+      if(!res.success) throw new Error(res.message);
+      sum.textContent=text; form.reset(); form.hidden=true; done.hidden=false;
+    }).catch(function(){
+      err.textContent="Something went wrong sending your message. Please try again in a moment.";
+    }).then(function(){ btn.disabled=false; btn.textContent="Send"; });
   });
   document.getElementById("copyMsg").addEventListener("click",function(){
     copy(sum.textContent, document.getElementById("msgNote"), "Message copied.", sum);
