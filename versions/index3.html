@@ -6,21 +6,29 @@
 <style>
 /* Layout concept: an LA city block plan. Pages are "lots" on a street grid; leaf green (jacaranda complement) marks the way through. */
 :root{
-  /* Dark only: the site always renders in its dark palette */
-  --bg:#0E1322;
-  --surface:#161C2F;
-  --ink:#E7EAF2;
-  --muted:#A1A9BE;
-  --line:#2A3350;
-  --jac:#A8CF6A;          /* leaf green, jacaranda complement */
-  --jac-soft:#223019;
-  --sun:#F0B85A;          /* late afternoon light */
-  --on-jac:#10180A;
+  --bg:#EEF1F5;
+  --surface:#FFFFFF;
+  --ink:#16203A;
+  --muted:#56607A;
+  --line:#CDD3DE;
+  --jac:#4E7A1E;          /* leaf green, jacaranda complement */
+  --jac-soft:#E2EDD2;
+  --sun:#E9A93B;          /* late afternoon light */
+  --on-jac:#FFFFFF;
   --display:"Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
   --body:"Nunito Sans", "Segoe UI", system-ui, sans-serif;
   --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
   --maxw:1120px;
-  color-scheme:dark;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1322; --surface:#161C2F; --ink:#E7EAF2; --muted:#A1A9BE; --line:#2A3350;
+    --jac:#A8CF6A; --jac-soft:#223019; --sun:#F0B85A; --on-jac:#10180A; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1322; --surface:#161C2F; --ink:#E7EAF2; --muted:#A1A9BE; --line:#2A3350;
+  --jac:#A8CF6A; --jac-soft:#223019; --sun:#F0B85A; --on-jac:#10180A; color-scheme:dark;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
