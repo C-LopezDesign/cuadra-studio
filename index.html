@@ -140,6 +140,16 @@ textarea{min-height:120px;resize:vertical}
 .clients li::marker{color:var(--jac)}
 .clients a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;text-decoration-thickness:1px}
 .clients a:hover{text-decoration-color:var(--jac)}
+/* Hover preview of a client's site. Screenshots come from WordPress mShots. Pointer devices only. */
+.peek{position:fixed;left:0;top:0;z-index:20;width:300px;max-width:calc(100vw - 32px);background:var(--surface);border:1.5px solid var(--ink);border-radius:6px;overflow:hidden;box-shadow:0 18px 40px rgba(0,0,0,.45);pointer-events:none;opacity:0;transform:translateY(6px);transition:opacity .15s ease,transform .15s ease}
+.peek.on{opacity:1;transform:none}
+.peek .shot{position:relative;aspect-ratio:16/10;max-width:100%;background:var(--bg)}
+.peek img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;transition:opacity .2s ease}
+.peek img.ready{opacity:1}
+.peek .wait{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.peek .cap{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--muted)}
+.peek .cap b{color:var(--jac);font-weight:500}
+@media (hover:none){.peek{display:none}}
 @media (max-width:600px){.clients{columns:1}}
 
 footer{border-top:1px solid var(--line);padding-block:32px}
@@ -339,6 +349,64 @@ footer a{color:var(--muted)}
     <span>© 2026 Cuadra Studio · Los Angeles, CA</span>
   </div>
 </footer>
+
+<div class="peek" id="peek" aria-hidden="true">
+  <div class="shot"><span class="wait" id="peekWait">Loading preview</span><img id="peekImg" alt=""></div>
+  <div class="cap"><span id="peekHost"></span><b>Opens in new tab</b></div>
+</div>
+
+<script>
+(function(){
+  var canHover = window.matchMedia && matchMedia("(hover:hover)").matches;
+  var links = document.querySelectorAll(".clients a");
+  if(!canHover || !links.length) return;
+  var peek=document.getElementById("peek"), img=document.getElementById("peekImg"), wait=document.getElementById("peekWait"), host=document.getElementById("peekHost");
+  // mShots returns a 400x300 "generating" placeholder until the screenshot exists, so warm every link up front and retry.
+  function shot(url, bust){ return "https://s.wordpress.com/mshots/v1/"+encodeURIComponent(url)+"?w=1200&h=750"+(bust?"&r="+bust:""); }
+  var cache={};
+  function load(url){
+    if(cache[url]) return cache[url];
+    var entry={src:null, cbs:[]}; cache[url]=entry; var tries=0;
+    (function attempt(){
+      var i=new Image();
+      i.onload=function(){
+        if(i.naturalWidth===400 && i.naturalHeight===300 && tries<6){ tries++; setTimeout(attempt, 2500); return; }
+        entry.src=i.src; entry.cbs.splice(0).forEach(function(cb){ cb(entry.src); });
+      };
+      i.onerror=function(){ if(tries<6){ tries++; setTimeout(attempt, 2500); } };
+      i.src=shot(url, tries);
+    })();
+    return entry;
+  }
+  function warm(){ links.forEach(function(a){ load(a.href); }); }
+  if("requestIdleCallback" in window) requestIdleCallback(warm,{timeout:3000}); else setTimeout(warm,1500);
+  var current=null;
+  function place(x,y){
+    var w=peek.offsetWidth, h=peek.offsetHeight, pad=16;
+    var left=Math.min(x+18, innerWidth-w-pad), top=y+22;
+    if(top+h>innerHeight-pad) top=y-h-14;
+    peek.style.left=Math.max(pad,left)+"px"; peek.style.top=Math.max(pad,top)+"px";
+  }
+  function show(a,x,y){
+    current=a.href;
+    host.textContent=a.hostname.replace(/^www\./,"");
+    img.classList.remove("ready"); img.removeAttribute("src"); wait.hidden=false;
+    var e=load(a.href), want=a.href;
+    function set(src){ if(current!==want) return; img.src=src; img.onload=function(){ img.classList.add("ready"); wait.hidden=true; }; }
+    if(e.src) set(e.src); else e.cbs.push(set);
+    peek.classList.add("on"); place(x,y);
+  }
+  function hide(){ current=null; peek.classList.remove("on"); }
+  links.forEach(function(a){
+    a.addEventListener("mouseenter",function(ev){ show(a,ev.clientX,ev.clientY); });
+    a.addEventListener("mousemove",function(ev){ place(ev.clientX,ev.clientY); });
+    a.addEventListener("mouseleave",hide);
+    a.addEventListener("focus",function(){ var r=a.getBoundingClientRect(); show(a,r.left,r.bottom-8); });
+    a.addEventListener("blur",hide);
+  });
+  addEventListener("scroll",hide,{passive:true});
+})();
+</script>
 
 <script>
 (function(){
