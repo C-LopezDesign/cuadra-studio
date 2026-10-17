@@ -40,12 +40,13 @@
 </script>
 <style>
   #cs-consent{
-    position:fixed;left:16px;right:16px;bottom:16px;max-width:440px;margin-left:auto;
+    position:fixed;left:16px;right:16px;bottom:16px;max-width:440px;margin-inline:auto;
     padding:16px 18px;border-radius:12px;
     background:var(--surface,#161C2F);color:var(--ink,#E7EAF2);border:1px solid var(--line,#2A3350);
     font:14px/1.5 var(--body,system-ui,sans-serif);
     box-shadow:0 8px 30px rgba(0,0,0,.35);z-index:9999;display:none
   }
+  #cs-consent .cs-title{font-family:var(--display,system-ui,sans-serif);font-size:19px;font-weight:800;line-height:1.2;margin:0 0 6px}
   #cs-consent p{margin:0 0 12px}
   #cs-consent a{color:inherit;text-decoration:underline}
   #cs-consent .cs-actions{display:flex;gap:8px}
@@ -80,8 +81,9 @@
       el = document.createElement('div');
       el.id = 'cs-consent';
       el.setAttribute('role', 'dialog');
-      el.setAttribute('aria-label', 'Cookie preferences');
+      el.setAttribute('aria-labelledby', 'cs-title');
       el.innerHTML =
+        '<p class="cs-title" id="cs-title">These cookies aren\'t evil</p>' +
         '<p>We use cookies to understand how people use this site and improve it. Nothing is used for ads. <a href="/privacy/">Privacy details</a></p>' +
         '<div class="cs-actions">' +
           '<button type="button" class="cs-decline">Decline</button>' +
