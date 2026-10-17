@@ -6,6 +6,100 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Nunito+Sans:opsz,wght@6..12,300;6..12,400;6..12,600;6..12,700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<!-- Analytics: Google Analytics 4 + Microsoft Clarity, gated by the consent banner below -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'denied',
+    wait_for_update: 500
+  });
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-181YVD0K4E"></script>
+<script>
+  gtag('js', new Date());
+  gtag('config', 'G-181YVD0K4E');
+</script>
+<script>
+  (function(c,l,a,r,i,t,y){
+    c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+  })(window, document, "clarity", "script", "yz8sdhfwuq");
+</script>
+<style>
+  #cs-consent{
+    position:fixed;left:16px;right:16px;bottom:16px;max-width:440px;margin-left:auto;
+    padding:16px 18px;border-radius:12px;
+    background:var(--surface,#161C2F);color:var(--ink,#E7EAF2);border:1px solid var(--line,#2A3350);
+    font:14px/1.5 var(--body,system-ui,sans-serif);
+    box-shadow:0 8px 30px rgba(0,0,0,.35);z-index:9999;display:none
+  }
+  #cs-consent p{margin:0 0 12px}
+  #cs-consent a{color:inherit;text-decoration:underline}
+  #cs-consent .cs-actions{display:flex;gap:8px}
+  #cs-consent button{
+    flex:1;padding:10px 14px;border-radius:8px;font:inherit;font-weight:700;cursor:pointer;
+    border:1px solid var(--jac,#A8CF6A)
+  }
+  #cs-consent .cs-accept{background:var(--jac,#A8CF6A);color:var(--on-jac,#10180A)}
+  #cs-consent .cs-decline{background:transparent;color:var(--ink,#E7EAF2);border-color:var(--line,#2A3350)}
+  #cs-consent button:focus-visible{outline:3px solid var(--jac,#A8CF6A);outline-offset:3px}
+  @media (max-width:480px){#cs-consent{left:12px;right:12px;bottom:12px;max-width:none}}
+</style>
+<script>
+(function () {
+  var KEY = 'cs_consent'; // 'granted' or 'denied'
+  function store(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
+  function read()   { try { return localStorage.getItem(KEY); } catch (e) { return null; } }
+  function apply(choice) {
+    var g = choice === 'granted' ? 'granted' : 'denied';
+    gtag('consent', 'update', { analytics_storage: g });
+    if (window.clarity) {
+      window.clarity('consentv2', { ad_Storage: 'denied', analytics_Storage: g });
+    }
+  }
+  function hide() {
+    var el = document.getElementById('cs-consent');
+    if (el) el.style.display = 'none';
+  }
+  function show() {
+    var el = document.getElementById('cs-consent');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'cs-consent';
+      el.setAttribute('role', 'dialog');
+      el.setAttribute('aria-label', 'Cookie preferences');
+      el.innerHTML =
+        '<p>We use cookies to understand how people use this site and improve it. Nothing is used for ads. <a href="/privacy/">Privacy details</a></p>' +
+        '<div class="cs-actions">' +
+          '<button type="button" class="cs-decline">Decline</button>' +
+          '<button type="button" class="cs-accept">Accept</button>' +
+        '</div>';
+      document.body.appendChild(el);
+      el.querySelector('.cs-accept').addEventListener('click', function () {
+        store('granted'); apply('granted'); hide();
+      });
+      el.querySelector('.cs-decline').addEventListener('click', function () {
+        store('denied'); apply('denied'); hide();
+      });
+    }
+    el.style.display = 'block';
+  }
+  var saved = read();
+  if (saved) apply(saved);
+  document.addEventListener('DOMContentLoaded', function () {
+    if (!saved) show();
+  });
+  window.csConsentReset = function () {
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    show();
+  };
+})();
+</script>
 </head><body>
 <style>
 /* Layout concept: an LA city block plan. Pages are "lots" on a street grid; leaf green (jacaranda complement) marks the way through. */
@@ -373,6 +467,7 @@ footer a{color:var(--muted)}
 <footer>
   <div class="wrap">
     <span>© 2026 Cuadra Studio · Los Angeles, CA</span>
+    <span><a href="/privacy/">Privacy</a> · <a href="#" onclick="csConsentReset();return false;">Cookie settings</a></span>
   </div>
 </footer>
 
@@ -478,6 +573,7 @@ footer a{color:var(--muted)}
       })
     }).then(function(r){ return r.json(); }).then(function(res){
       if(!res.success) throw new Error(res.message);
+      if(window.gtag) gtag("event","generate_lead");
       sum.textContent=text; form.reset(); form.hidden=true; done.hidden=false;
     }).catch(function(){
       err.textContent="Something went wrong sending your message. Please try again in a moment.";
